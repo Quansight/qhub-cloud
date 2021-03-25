@@ -12,6 +12,11 @@ terraform {
     digitalocean = {
       source = "digitalocean/digitalocean"
     }
+{%- elif cookiecutter.provider == "kind" %}
+    kind = {
+      source = "kyma-incubator/kind"
+      version = "0.0.7"
+    }
 {% endif %}
     helm = {
       source = "hashicorp/helm"

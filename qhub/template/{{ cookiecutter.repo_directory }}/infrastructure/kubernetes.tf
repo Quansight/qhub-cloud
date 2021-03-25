@@ -1,6 +1,11 @@
 provider "kubernetes" {
 {% if cookiecutter.provider == "local" %}
   config_path = "~/.kube/config"
+{% elif cookiecutter.provider == "kind" %}
+  host           = module.kubernetes.credentials.endpoint
+  config_path    = "~/.kube/config"
+  config_context = "kind-{{ cookiecutter.project_name }}-dev"
+  insecure       = true
 {% else %}
   host                   = module.kubernetes.credentials.endpoint
   token                  = module.kubernetes.credentials.token
@@ -15,8 +20,7 @@ module "kubernetes-initialization" {
   secrets   = []
 }
 
-
-{% if cookiecutter.provider == "aws" -%}
+{% if cookiecutter.provider == "aws" %}
 module "kubernetes-nfs-mount" {
   source = "{{ cookiecutter.terraform_modules.repository }}//modules/kubernetes/nfs-mount?ref={{ cookiecutter.terraform_modules.rev }}"
 
@@ -29,7 +33,7 @@ module "kubernetes-nfs-mount" {
     module.kubernetes-nfs-server
   ]
 }
-{% else -%}
+{% else %}
 module "kubernetes-nfs-server" {
   source = "{{ cookiecutter.terraform_modules.repository }}//modules/kubernetes/nfs-server?ref={{ cookiecutter.terraform_modules.rev }}"
 
@@ -87,9 +91,14 @@ module "kubernetes-conda-store-mount" {
 }
 
 provider "helm" {
+  debug = true
   kubernetes {
 {% if cookiecutter.provider == "local" %}
     config_path = "~/.kube/config"
+{% elif cookiecutter.provider == "kind" %}
+    host                   = module.kubernetes.credentials.endpoint
+    cluster_ca_certificate = module.kubernetes.credentials.cluster_ca_certificate
+    load_config_file       = true
 {% else %}
     load_config_file       = false
     host                   = module.kubernetes.credentials.endpoint
@@ -100,27 +109,27 @@ provider "helm" {
   version = "1.0.0"
 }
 
-{% if cookiecutter.provider == "aws" -%}
+{% if cookiecutter.provider == "aws" %}
 module "kubernetes-autoscaling" {
-  source = "{{ cookiecutter.terraform_modules.repository }}//modules/kubernetes/services/cluster-autoscaler?ref={{ cookiecutter.terraform_modules.rev }}"
-
-  namespace = var.environment
-
+  source       = "{{ cookiecutter.terraform_modules.repository }}//modules/kubernetes/services/cluster-autoscaler?ref={{ cookiecutter.terraform_modules.rev }}"
+  namespace    = var.environment
   aws-region   = var.region
   cluster-name = local.cluster_name
-
   depends_on = [
     module.kubernetes-initialization
   ]
 }
-{% endif -%}
+{% endif %}
 
 module "kubernetes-ingress" {
-  source = "{{ cookiecutter.terraform_modules.repository }}//modules/kubernetes/ingress?ref={{ cookiecutter.terraform_modules.rev }}"
+{% if cookiecutter.provider != "kind" %}
+  source     = "{{ cookiecutter.terraform_modules.repository }}//modules/kubernetes/ingress?ref={{ cookiecutter.terraform_modules.rev }}"
+  node-group = local.node_groups.general
+{% else %}
+  source     = "{{ cookiecutter.terraform_modules.repository }}//modules/kind/ingress?ref={{ cookiecutter.terraform_modules.rev }}"
+{% endif %}
 
   namespace = var.environment
-
-  node-group = local.node_groups.general
 
   depends_on = [
     module.kubernetes-initialization
@@ -137,6 +146,8 @@ module "qhub" {
   conda-store-pvc = module.kubernetes-conda-store-mount.persistent_volume_claim.name
 
   external-url = var.endpoint
+
+  annotations = module.kubernetes-ingress.annotations
 
   jupyterhub-image  = var.jupyterhub-image
   jupyterlab-image  = var.jupyterlab-image
@@ -159,9 +170,9 @@ module "qhub" {
   ]
 }
 
-{% if cookiecutter.prefect is true -%}
+{% if cookiecutter.prefect is true %}
 module "prefect" {
-  source = "github.com/quansight/qhub-terraform-modules//modules/kubernetes/services/prefect"
+  source = "{{ cookiecutter.terraform_modules.repository }}//modules/kubernetes/services/prefect?ref={{ cookiecutter.terraform_modules.rev }}"
 
   depends_on = [
     module.qhub
@@ -170,4 +181,4 @@ module "prefect" {
   jupyterhub_api_token = module.qhub.jupyterhub_api_token
   prefect_token        = var.prefect_token
 }
-{% endif -%}
+{% endif %}
