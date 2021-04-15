@@ -10,7 +10,7 @@ be accurate.
 ## General
 
 ```yaml
-project_name: do-jupyterhub # name of the kubernetes/Cloud deployment 
+project_name: dojupyterhub # name of the kubernetes/Cloud deployment
 namespace: dev
 provider: <provider_alias> # determines the choice of cloud provider for the deployment
 ci_cd: github-actions # continuous integration and continuous deployment framework to use
@@ -30,16 +30,15 @@ domain: "do.qhub.dev" # top level URL exposure to monitor JupyterLab
     Azure, and `local` for a local or existing kubernetes deployment.
 
  - `ci_cd`: is the continuous integration and continuous deployment
-   framework to use. Currently only `github-actions` is supported.
+   framework to use. Currently, only `github-actions` is supported.
 
  - `domain`: is the top level URL to put JupyterLab and future
-   services under such a monitoring. For example `jupyter.qhub.dev`
-   would be the domain for JupyterHub to be exposed under. Note that
-   this domain does not have to have `jupyter` in it.
+   services under such a monitoring. For example `qhub.dev`
+   would be the domain for JupyterHub to be exposed under.
 
 ## Certificate
 
-By default to simplify initial deployment `QHub` uses traefik to
+By default, to simplify initial deployment `QHub` uses traefik to
 create a self-signed certificate. In order to create a certificate
 that is signed so that web browsers do not throw errors we currently
 support [Let's Encrypt](https://letsencrypt.org/).
@@ -61,9 +60,9 @@ certificate:
   acme_server:
 ```
 
-You may also supply a custom self signed certificate and secret
+You may also supply a custom self-signed certificate and secret
 key. Note that the kubernetes default namespace that QHub uses is
-`dev` if not specified. Otherwise it will be your `namespace` defined
+`dev` if not specified. Otherwise, it will be your `namespace` defined
 in the `qhub-config.yaml`.
 
 ```yaml
@@ -84,8 +83,7 @@ kubectl create secret tls <secret-name> \
 ## Security
 
 This section is for configuring security relating to the QHub
-deployment. [obvious sentence]
-
+deployment.
 ```yaml
 security:
   authentication:
@@ -93,7 +91,7 @@ security:
     config:
       client_id: <CLIENT_ID>
       client_secret: <CLIENT_SECRET>
-      oauth_callback_url: https://jupyter.do.qhub.dev/hub/oauth_callback
+      oauth_callback_url: https://do.qhub.dev/hub/oauth_callback
   users:
     example-user:
       uid: 1000
@@ -116,7 +114,7 @@ security:
 
 `security.authentication` is for configuring the OAuth and GitHub
 Provider, password based authentication, or custom
-authentication. 
+authentication.
 
 #### Auth0 Based Authentication
 
@@ -575,7 +573,7 @@ theme:
       Welcome to jupyter.github-actions.qhub.dev. It is maintained by <a href="http://quansight.com">Quansight
       staff</a>. The hub's configuration is stored in a github repository based on
       <a href="https://github.com/Quansight/qhub/">https://github.com/Quansight/qhub/</a>.
-      To provide feedback and report any technical problems, please use the 
+      To provide feedback and report any technical problems, please use the
       <a href="https://github.com/Quansight/qhub/issues">github issue tracker</a>.
     logo: /hub/custom/images/jupyter_qhub_logo.svg
     primary_color: '#4f4173'
@@ -715,7 +713,7 @@ theme:
       Welcome to jupyter.github-actions.qhub.dev. It is maintained by <a href="http://quansight.com">Quansight
       staff</a>. The hub's configuration is stored in a github repository based on
       <a href="https://github.com/Quansight/qhub/">https://github.com/Quansight/qhub/</a>.
-      To provide feedback and report any technical problems, please use the 
+      To provide feedback and report any technical problems, please use the
       <a href="https://github.com/Quansight/qhub/issues">github issue tracker</a>.
     logo: /hub/custom/images/jupyter_qhub_logo.svg
     primary_color: '#4f4173'
