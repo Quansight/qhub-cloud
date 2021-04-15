@@ -1,13 +1,16 @@
 import pathlib
-
 import yaml
 
 from qhub.schema import verify
+from qhub.provider.cicd.linter import comment_on_pr
 
 
 def create_validate_subcommand(subparser):
     subparser = subparser.add_parser("validate")
     subparser.add_argument("config", help="qhub configuration")
+    subparser.add_argument(
+        "--enable-commenting", help="Turn on PR commenting", action="store_true"
+    )
     subparser.set_defaults(func=handle_validate)
 
 
@@ -21,4 +24,8 @@ def handle_validate(args):
     with config_filename.open() as f:
         config = yaml.safe_load(f.read())
 
-    verify(config)
+    if args.enable_commenting:
+        # for PR's only
+        comment_on_pr()
+    else:
+        verify(config)
