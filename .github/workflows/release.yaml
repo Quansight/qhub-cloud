@@ -19,7 +19,6 @@ jobs:
 
       # TODO check that the version.py version number matches the tag
       # and that the branch release-<version> also points to this tag
-      # and that terraform-modules tag release-{version} exists
 
       - name: Install QHub
         run: |
